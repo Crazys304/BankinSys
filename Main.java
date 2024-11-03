@@ -114,11 +114,11 @@ public class Main {
                                                 "|2. No                  |\n" +
                                                 "-------------------------\n"
                                 );
-                                System.out.println("Enter the number: ");
                                 int input_second = obj.nextInt();
                                 obj.nextLine();
 
                                 if (input_second == 1) {
+                                    System.out.println("Enter the number: ");
                                     accNumber = obj.nextLine();
                                     isValid = accNumber.matches("^[A-Z]{3}[0-9]{3}$");
                                 } else if (input_second == 2) {
