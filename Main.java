@@ -13,33 +13,15 @@ class InvalidInputSubMenuException extends Exception {
         super("Invalid option. Input numbers between 1 and 2. \n");
     }
 }
-// Custom exception to check if account number is not empty
-class EmptyAccountException extends Exception {
-    public EmptyAccountException() {
-        super("Account number cannot be empty. \n");
-    }
-}
 // Exception for checking if customer already exists
 class CustomerExistException extends Exception {
     public CustomerExistException() {
         super("Customer already exists. \n");
     }
 }
-// Exception for checking if deposit is greater than 0
-class GreaterThanZeroException extends Exception {
-    public GreaterThanZeroException() {
-        super("Amount must be greater than zero. \n");
-    }
-}
-// Exception for checking if account has needed funds
-class TooMuchWithdrawException extends Exception {
-    public TooMuchWithdrawException() {
-        super("Error: Insufficient funds. \n");
-    }
-}
 
 public class Main {
-    // Checks if the input is between the right numbers
+    // Checks if the menu input is between the right numbers
     public static void InputException(int number) throws InvalidInputException {
         if (number < 1 || number > 5) {
             throw new InvalidInputException(number);
@@ -51,28 +33,10 @@ public class Main {
             throw new InvalidInputSubMenuException(number);
         }
     }
-    // Checks if account number is not empty
-    public static void checkEmptyAccount(String account) throws EmptyAccountException {
-        if (account.trim().isEmpty()) {
-            throw new EmptyAccountException();
-        }
-    }
     // Checks if one customer exists
     public static void checkCustomerExist(int customer) throws CustomerExistException {
         if (customer == 1) {
             throw new CustomerExistException();
-        }
-    }
-    // Checks if deposit is more than 0
-    public static void checkAmount(double amount) throws GreaterThanZeroException {
-        if (amount < 0.0) {
-            throw new GreaterThanZeroException();
-        }
-    }
-    // Checks if withdraw isn't bigger than the amount in account
-    public static void checkWithdrawAmount(double amount, double bankAccount) throws TooMuchWithdrawException {
-        if (amount > bankAccount) {
-            throw new TooMuchWithdrawException();
         }
     }
 
@@ -98,13 +62,13 @@ public class Main {
                 int number = obj.nextInt();
                 obj.nextLine();
 
-                if (number == 1) {
+                if (number == 1) { // Add customer
                     try {
                         checkCustomerExist(exists); // Checks if customer already exists
-                        System.out.println("Enter account number (3 big letters 3 numbers: ");
+                        System.out.println("Enter account number: ");
                         String accNumber = obj.nextLine();
-                        boolean isValid = accNumber.matches("^[A-Z]{3}[0-9]{3}$");
-                        while (!isValid) {
+                        boolean isValid = accNumber.matches("^[a-zA-Z]{3}[0-9]{3}$"); // Checks if account number matches the pattern
+                        while (!isValid) { // while isValid is not true, prints submenu
                             try {
                                 System.out.println(
                                         "|Invalid account number.|\n" +
@@ -112,18 +76,19 @@ public class Main {
                                                 "-------------------------\n" +
                                                 "|1. Yes                 |\n" +
                                                 "|2. No                  |\n" +
-                                                "-------------------------\n"
+                                                "-------------------------"
                                 );
                                 int input_second = obj.nextInt();
                                 obj.nextLine();
 
                                 if (input_second == 1) {
-                                    System.out.println("Enter the number: ");
+                                    System.out.println("Enter account number again: ");
                                     accNumber = obj.nextLine();
-                                    isValid = accNumber.matches("^[A-Z]{3}[0-9]{3}$");
+                                    isValid = accNumber.matches("^[a-zA-Z]{3}[0-9]{3}$"); // Checks again if it matches
                                 } else if (input_second == 2) {
-                                    isValid = true;
+                                    isValid = true; // Exits loop
                                 } else {
+                                    // Invalid input handling
                                     try {
                                         InputSubException(input_second);
                                     } catch (InvalidInputSubMenuException e) {
@@ -135,57 +100,47 @@ public class Main {
                                 obj.nextLine();
                             }
                         }
-
-                        checkEmptyAccount(accNumber); // Checks if account number is not empty
-                        if (accNumber.isEmpty() | accNumber.matches("^[A-Z]{3}[0-9]{3}$")) {
-                            su.setAccountNumber(accNumber); // Sets account number in bank class
+                        if (accNumber.isEmpty()) {
+                            System.out.println(" ");
+                            continue;
+                        } else if (accNumber.matches("^[a-zA-Z]{3}[0-9]{3}$")) {
+                            su.setAccountNumber(accNumber.toUpperCase()); // Sets account number in bank class
                             System.out.println("Customer " + su.getAccountNumber() + " added");
-                            exists++; // Increments customer count
+                            exists++; // Adds that customer has been added
                         }
-                    } catch (EmptyAccountException | CustomerExistException e) {
-                        System.out.println(e.getMessage()); // Prints empty account exception message
+                    } catch (CustomerExistException e) {
+                        System.out.println(e.getMessage()); // Prints empty account or that customer already exists exception message
                     }
                 } else if (number == 2) {
-                    if (exists == 0) {
+                    if (exists == 0) { // If account hasn't been added, can't do deposit
                         System.out.println("Please add an account before making a deposit. \n");
                         continue;
                     }
                     try {
                         System.out.println("Deposit amount: ");
                         double amount = obj.nextDouble();
-
-                        checkAmount(amount);// Checks if deposit amount is valid
-
                         su.deposit(amount); // Calls deposit method from bank class
-                        System.out.println("Customer deposited " + amount + " . Current balance is: " + su.getBalance() + " Euro.");
-                    } catch (GreaterThanZeroException e) {
-                        System.out.println(e.getMessage()); // Prints deposit exception message
                     } catch (InputMismatchException e) {
                         System.out.println("Invalid input. \n");
                         obj.nextLine();
                     }
                 } else if (number == 3) {
-                    if (exists == 0) {
-                        System.out.println("Please add an account before making a withdrawal. \n");
+                    if (exists == 0) { // If account hasn't been added, can't do withdrawal
+                        System.out.println("Please add an account before making a withdrawal.");
                         continue;
                     }
                     try {
+                        // Prints out account balance and asks how much to withdraw
                         System.out.println("In account: " + su.getBalance() + "\nWithdraw amount: ");
                         double amount = obj.nextDouble();
-
-                        checkWithdrawAmount(amount, su.getBalance()); // Checks if amount is not larger than balance
-
                         su.withdraw(amount); // Calls withdraw method from bank class
-                        System.out.println("Withdraw " + amount + " . Current balance is: " + su.getBalance() + " Euro.");
-                    } catch (TooMuchWithdrawException e) {
-                        System.out.println(e.getMessage()); // Prints too much withdraw exception message
                     } catch (InputMismatchException e) {
                         System.out.println("Invalid input. \n");
                         obj.nextLine();
                     }
                 } else if (number == 4) {
-                    if (exists == 0) {
-                        System.out.println("Please add an account before checking account balance. \n");
+                    if (exists == 0) { // If account hasn't been added, can't check balance
+                        System.out.println("Please add an account before checking account balance. ");
                         continue;
                     }
                     // Prints account number and account balance form bank class
@@ -193,7 +148,7 @@ public class Main {
                 } else if (number == 5) {
                     System.out.println("Thank you for the feedback and have a great day! \nExiting...");
                     obj.close();
-                    System.exit(0);
+                    System.exit(0); // Exits the program
                 } else {
                     try {
                         InputException(number); // Checks if menu option input is between 1 to 5
@@ -202,7 +157,7 @@ public class Main {
                     }
                 }
             } catch (InputMismatchException e) {
-                System.out.println("Invalid input. \n");
+                System.out.println("Invalid input.");
                 obj.nextLine();
             }
         }
